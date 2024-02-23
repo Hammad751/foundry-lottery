@@ -45,6 +45,8 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Events */
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
+
     constructor(
         uint256 _entFee,
         uint256 _interval,
@@ -117,13 +119,15 @@ contract Raffle is VRFConsumerBaseV2 {
         // ID 7260
         // ETH/USD Mumbai MATIC
         // 0x0715A7794a1dc8e42615F059dD6e406A6594651A
-        i_vrfCoordinator.requestRandomWords(
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_keyHash,
             i_subscriptionId,
             REQUEST_CONFIRMATIONS,
             i_callbackGasLimit,
             NUM_WORDS
         );
+
+        emit RequestedRaffleWinner(requestId);
     }
 
     // CEI: Checks, Effecs, Interactions
@@ -163,5 +167,17 @@ contract Raffle is VRFConsumerBaseV2 {
     
     function getPlayer(uint256 playerIndex) external view returns(address){
         return s_players[playerIndex];
+    }
+
+    function getPlayersLength() external view returns(uint256){
+        return s_players.length;
+    }
+
+    function getRecentWinner() external view returns(address){
+        return s_recentWinner;
+    }
+
+    function getLastTimeStamp() external view returns(uint256){
+        return s_lastTimeStamp;
     }
 }

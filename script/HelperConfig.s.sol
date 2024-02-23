@@ -2,6 +2,7 @@
 pragma solidity ^0.8.19;
 import {Script} from "forge-std/Script.sol";
 import {VRFCoordinatorV2Mock} from "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
+import {LinkToken} from "../test/mocks/LinkToken.sol";
 
 contract HelperConfig is Script{
     // we add this structure having the values given in the Raffle contract
@@ -12,6 +13,8 @@ contract HelperConfig is Script{
         uint32 callbackGasLimit;
         address vrfCoordinator;
         bytes32 keyHash;
+        address link;
+        uint256 deployerKey;
     }
 
     // write some constructor configuration 
@@ -26,14 +29,16 @@ contract HelperConfig is Script{
     }
 
     // Now get the network configuration
-    function getMumbaiChainConfig() public pure returns(NetworkConfig memory){
+    function getMumbaiChainConfig() public view returns(NetworkConfig memory){
         return NetworkConfig({
             entFee: 0.001 ether,
             interval: 30,
             subscriptionId: 7260,
             callbackGasLimit: 500000,
             vrfCoordinator: 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed,
-            keyHash: 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f
+            keyHash: 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f,
+            link: 0x326C977E6efc84E512bB9C30f76E30c160eD06FB,
+            deployerKey: vm.envUint("PRIVATE_KEY")
         });
     }
 
@@ -63,7 +68,9 @@ contract HelperConfig is Script{
 
         vm.startBroadcast();
         VRFCoordinatorV2Mock vrfCoordinatorMock = new VRFCoordinatorV2Mock(baseFee, gasPriceLink);
+        LinkToken link = new LinkToken();
         vm.stopBroadcast();
+        // for mock configuration we also have to deploy the link token manually
 
         return NetworkConfig({
             entFee: 0.001 ether,
@@ -71,7 +78,9 @@ contract HelperConfig is Script{
             subscriptionId: 0, // update through subId
             callbackGasLimit: 500000,
             vrfCoordinator: address(vrfCoordinatorMock),
-            keyHash: 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f
+            keyHash: 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f,
+            link: address(link),
+            deployerKey: vm.envUint("ANVIL_PRIVATE_KEY")
         });
     }
 }
