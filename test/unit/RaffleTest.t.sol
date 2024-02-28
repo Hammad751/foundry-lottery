@@ -174,21 +174,38 @@ contract RaffleTest is Test {
     // fulfillRandomWords //
     ////////////////////////
 
-    function fulfillRandomWordsCanonlyBeCalledAfterPerformUpKeep(
-        uint256 randomeRequestId
+    modifier skipFork() {
+        if(block.chainid != 31337){
+            return;
+        }
+        _;
+    }
+
+    function fulfillRandomWordsCanOnlyBeCalledAfterPerformUpKeep(
+        // uint256 randomeRequestId
     ) 
     public 
     raffleEnteredTimePassed
+    skipFork()
     {
         vm.expectRevert("nonexistent request");
-        VRFCoordinatorV2Mock(vrfCoordinator).
-        fulfillRandomWords(randomeRequestId, address(raffel));
+        VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords(
+            0,    // randomeRequestId, 
+            address(raffel)
+        );
+
+        vm.expectRevert("nonexistent request");
+        VRFCoordinatorV2Mock(vrfCoordinator).fulfillRandomWords(
+            1,    // randomeRequestId, 
+            address(raffel)
+        );
 
     }
 
     function fulfillRandomWordsPickWinnerResetAndSendMoney() 
     public 
     raffleEnteredTimePassed // here we have 1 entrant
+    skipFork()
     {
         uint256 additionalEntrant = 5; // here we add 5 more entrants in the testing phase
         uint256 startingIndex = 1;
